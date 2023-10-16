@@ -48,3 +48,7 @@ if vAddr[0] != 0 then
     SignalException(AddressError)
 endif
 ```
+
+## Vivado Simulation
+
+![](./vivado_simulation.png)
