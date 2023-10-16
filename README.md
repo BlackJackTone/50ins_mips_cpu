@@ -1,8 +1,7 @@
-# 50条指令流水线CPU设计
+# 5-Stage Pipeline CPU supporting 50 MIPS Instructions
 
-## 控制信号
+## Control Signals
 
-所有使用的控制信号如下
 ```verilog
 typedef struct packed{
     logic RegDst;
@@ -28,18 +27,20 @@ typedef struct packed{
 }Controller;
 ```
 
-## 旁路
+## Operand Forwarding
 
-除EX需要从旁路来的数据外，由于在ID处理分支和跳转，需额外设计复杂程度相似的另外一条旁路，处理EX级中结果直接通过wire进入ID运算的情况
+Besides the forwarding needed by the EX stage, the ID stage also requires oprand forwarding to feed branching and jumping, sending results from the EX stage directly to the ID stage through a verilog wire.
 
-## 阻塞
+## Blocking
 
-由于分支和跳转需要ID判定早于其他EX才开始计算的指令，lw除了面对其他有冒险的指令外，需要对于分支和跳转多加MEM级的旁路，或者多阻塞一周期，本次实现选择多加一周期阻塞
-对于MDU带来的阻塞，采取检测EX级是否使用MDU并与busy信号做与，一旦满足条件就阻塞前两级，并把之EX_MEM寄存器清空
+Since branching and jumping are determined in the ID stage, which are previous to most other instructions' calculation in the EX stage, there is even one more stage ahead for the instructions loading from the MEM stage  i.e., the `lw` instruction set. Thus, either a forward from the MEM stage to the ID stage or another blocking is need. I choose to add a blocking.
 
-## 异常
+For blocking brought by MDU, I detect whether MDU is used in the EX stage and AND it with the busy signal. Once the condition is met, I block the previous two stages and clear the EX_MEM register.
 
-对于非对齐内存的读写进行异常处理，`LH,LHU,SH`的异常逻辑如下，`LW,SW`与其类似
+## Exception
+
+Solving execptions for non-alaigned memory reading and writing.
+The exception handling logic of `LH,LHU,SH` goes below, and I deal with `LW,SW` similarly.
 
 ```c++
 vAddr <- sign_extend(offset) + GPR[base]
