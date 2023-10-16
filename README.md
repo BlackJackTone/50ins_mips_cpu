@@ -1,4 +1,4 @@
-# 5-Stage Pipeline CPU supporting 50 MIPS Instructions
+# Five-Stage Pipeline CPU supporting 50 MIPS Instructions
 
 ## Control Signals
 
